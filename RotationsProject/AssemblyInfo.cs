@@ -1,0 +1,1 @@
+﻿[assembly: AssemblyLink(Donate = "", UserName = "S0CRAM", Repository = "CustomRotations")]
