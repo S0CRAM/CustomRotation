@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 namespace RotationsProject.Healer
 {
-    [Rotation("Akira_SGE", CombatType.PvE, Description = "Akira's rotation for SGE v0.11", GameVersion = "7.05")]
+    [Rotation("Akira_SGE", CombatType.PvE, Description = "Akira's rotation for SGE v0.12", GameVersion = "7.05")]
     [SourceCode(Path = "main/RotationsProject/Healer/Akira_SGE.cs")]
     [Api(3)]
     public class Akira_SGE : SageRotation
@@ -135,7 +135,8 @@ namespace RotationsProject.Healer
             {
                 foreach (var item in PartyMembers)
                 {
-                    if (item.IsJobCategory(JobRole.Tank) && Addersting < 3 && item.GetHealthRatio() <= 1 && !item.HasStatus(true,
+                    if (item.IsJobCategory(JobRole.Tank) && Addersting < 3 && item.ShieldPercentage.Equals(0) &&
+                        !item.HasStatus(true,
                          StatusID.EukrasianDiagnosis,
                          StatusID.EukrasianDiagnosis_2865,
                          StatusID.EukrasianDiagnosis_3109))
@@ -144,14 +145,6 @@ namespace RotationsProject.Healer
                         if (DiagnosisPvE.CanUse(out act)) return true;
                     }
                 }
-            }
-            // AoE shield when below threshold
-            if (InCombat && EukrasianPrognosisPvE.Target.AffectedTargets.Length > 2 && !Player.HasStatus(true,
-                StatusID.EukrasianPrognosis,
-                StatusID.EukrasianPrognosis_2866 ))
-            {
-                if (EukrasiaPvE.CanUse(out act)) return true;
-                if (PrognosisPvE.CanUse(out act)) return true;
             }
             // AoE DoT Attack
             if ((DyskrasiaPvE.Target.AffectedTargets?.Length > 2) && !(HostileTarget?.HasStatus(true,
