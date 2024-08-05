@@ -1,6 +1,4 @@
-﻿
-using System.Linq;
-
+﻿using System.Linq;
 namespace RotationsProject.Healer
 {
     [Rotation("Akira_SGE", CombatType.PvE, Description = "Akira's rotation for SGE v0.11", GameVersion = "7.05")]
