@@ -60,6 +60,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="RotationSolverReborn.Basic" Version="7.0.5.11" />
+		<PackageReference Include="RotationSolverReborn.Basic" Version="7.0.5.19" />
 	</ItemGroup>
 </Project>
