@@ -90,7 +90,7 @@ namespace RotationsProject.Healer
             }
             else
             {
-                if (MacrocosmosPvE.CanUse(out act)) return true;
+                if (MacrocosmosPvE.CanUse(out act) && !Player.HasStatus(true, StatusID.Horoscope, StatusID.HoroscopeHelios)) return true;
                 if (NeutralSectPvE.CanUse(out act)) return true;
             }
             return base.DefenseAreaGCD(out act);
@@ -139,7 +139,7 @@ namespace RotationsProject.Healer
         #region GCD Logic
         protected override bool GeneralGCD(out IAction act)
         {
-            if (IsLastGCD(true, NeutralSectPvE, HoroscopePvE))
+            if (IsLastAbility(true, NeutralSectPvE, HoroscopePvE))
             {
                 AspectedHeliosPvE.CanUse(out act);
                 return true;
@@ -163,8 +163,7 @@ namespace RotationsProject.Healer
             // oGCD Healing extras
             if (PartyMembersAverHP <= HoroHelios)
             {
-                HoroscopePvE_16558.CanUse(out act);
-                return true;
+                if (HoroscopePvE_16558.CanUse(out act)) return true;
             }
 
 

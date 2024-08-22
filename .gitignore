@@ -396,4 +396,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+SND MonsterHunting Electric Boogaloo.lua
 *.lua
