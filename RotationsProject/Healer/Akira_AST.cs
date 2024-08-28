@@ -160,7 +160,7 @@ namespace RotationsProject.Healer
         #region oGCD Logic
         protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
         {
-            // oGCD Healing extras
+            // Horoscope Helios Usage (Requires Horoscope to be used already)
             if (PartyMembersAverHP <= HoroHelios)
             {
                 if (HoroscopePvE_16558.CanUse(out act)) return true;
