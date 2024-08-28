@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace RotationsProject.Healer
 {
-    [Rotation("Akira_AST", CombatType.PvE, Description = "Akira's rotation for AST v0.6", GameVersion = "7.05")]
+    [Rotation("Akira_AST", CombatType.PvE, Description = "Akira's rotation for AST v0.7", GameVersion = "7.05")]
     [SourceCode(Path = "main/RotationsProject/Healer/Akira_AST.cs")]
     [Api(3)]
     public class Akira_AST : AstrologianRotation
@@ -184,7 +184,8 @@ namespace RotationsProject.Healer
             if (TheSpirePvE.CanUse(out act) && UmbralDrawPvE.Cooldown.WillHaveOneCharge(12)) return true;
             if (TheEwerPvE.CanUse(out act) && AstralDrawPvE.Cooldown.WillHaveOneCharge(12)) return true;
             if (TheBolePvE.CanUse(out act) && AstralDrawPvE.Cooldown.WillHaveOneCharge(12)) return true;
-
+            // Weave lucid dreaming during combat
+            if (CurrentMp <= 6500 && InCombat && LucidDreamingPvE.CanUse(out act)) return true;
 
             return base.GeneralAbility(nextGCD, out act);
         }
