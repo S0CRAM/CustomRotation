@@ -139,7 +139,7 @@ namespace RotationsProject.Healer
         #region GCD Logic
         protected override bool GeneralGCD(out IAction act)
         {
-            if (IsLastAbility(true, NeutralSectPvE, HoroscopePvE))
+            if (IsLastAction(true, NeutralSectPvE, HoroscopePvE))
             {
                 AspectedHeliosPvE.CanUse(out act);
                 return true;
