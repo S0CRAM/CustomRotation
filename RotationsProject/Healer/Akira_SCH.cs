@@ -176,7 +176,7 @@ namespace RotationsProject.Healer
         // TODO: Allow option for EnergyDrain to only be used in burst
         protected override bool AttackAbility(IAction nextGCD, out IAction? act)
         {
-            if (IsBurst)
+            if (IsBurst && HostileTarget.IsBossFromIcon())
             {
                 if (ChainStratagemPvE.CanUse(out act)) return true;
                 if (BanefulImpactionPvE.CanUse(out act,skipAoeCheck: true)) return true;
@@ -188,7 +188,8 @@ namespace RotationsProject.Healer
             }
 
             // In here because of how low the potency is
-            if (InCombat && WhisperingDawnPvE_16537.CanUse(out act) && PartyMembersAverHP <= 0.95) return true;
+            if (InCombat && WhisperingDawnPvE_16537.CanUse(out act) &&
+                PartyMembersAverHP <= 0.95 && !Player.HasStatus(true, StatusID.Dissipation)) return true;
 
             // Aetherflow management
             if (AetherflowPvE.CanUse(out act) && !HasAetherflow) return true;
