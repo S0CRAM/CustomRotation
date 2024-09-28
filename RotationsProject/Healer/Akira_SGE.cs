@@ -3,7 +3,7 @@ namespace RotationsProject.Healer
 {
     [Rotation("Akira_SGE", CombatType.PvE, Description = "Akira's rotation for SGE v0.18", GameVersion = "7.05")]
     [SourceCode(Path = "main/RotationsProject/Healer/Akira_SGE.cs")]
-    [Api(3)]
+    [Api(4)]
     public class Akira_SGE : SageRotation
     {
         #region Config options

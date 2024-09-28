@@ -8,7 +8,7 @@ namespace RotationsProject.Healer
 {
     [Rotation("Akira_SCH", CombatType.PvE, Description = "Akira's SCH v0.3", GameVersion = "7.05")]
     [SourceCode(Path = "main/RotationsProject/Healer/Akira_SCH.cs")]
-    [Api(3)]
+    [Api(4)]
     public class Akira_SCH : ScholarRotation
     {
         #region Config Options
@@ -18,7 +18,7 @@ namespace RotationsProject.Healer
         #region Countdown Logic
         protected override IAction? CountDownAction(float remainTime)
         {
-            if (remainTime < RuinPvE.Info.CastTime + CountDownAhead && RuinPvE.CanUse(out var act)) return act;
+            if (remainTime < RuinPvE.Info.CastTime + Countdown.TimeRemaining && RuinPvE.CanUse(out var act)) return act;
             foreach (var item in PartyMembers)
             {
                 if (item.IsJobCategory(JobRole.Tank) || item.IsJobCategory(JobRole.Healer))
