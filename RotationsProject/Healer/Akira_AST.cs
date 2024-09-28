@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace RotationsProject.Healer
 {
-    [Rotation("Akira_AST", CombatType.PvE, Description = "Akira's rotation for AST v0.10", GameVersion = "7.05")]
+    [Rotation("Akira_AST", CombatType.PvE, Description = "Akira's rotation for AST v0.11b", GameVersion = "7.05")]
     [SourceCode(Path = "main/RotationsProject/Healer/Akira_AST.cs")]
     [Api(4)]
     public class Akira_AST : AstrologianRotation
@@ -34,23 +34,34 @@ namespace RotationsProject.Healer
         protected override bool EmergencyAbility(IAction nextGCD, out IAction act)
         {
             if (base.EmergencyAbility(nextGCD, out act)) return true;
-
             if (!InCombat) return false;
-
+            // Weave lucid dreaming during combat
+            if (CurrentMp <= 6000 && InCombat && LucidDreamingPvE.CanUse(out act)) return true;
+            // Buff cards
+            if (InCombat && (!DivinationPvE.Cooldown.WillHaveOneCharge(70) ||
+                              DivinationPvE.Cooldown.HasOneCharge ||
+                              DivinationPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 1)))
+            {
+                if (InCombat && TheBalancePvE.CanUse(out act) && !(TheBalancePvE.Target.Target.HasStatus(false, StatusID.Weakness))) return true;
+                if (InCombat && TheSpearPvE.CanUse(out act) && !(TheSpearPvE.Target.Target.HasStatus(false, StatusID.Weakness))) return true;
+            }
+            // Healing
             if (PartyMembersAverHP < 0.85f)
             {
                 if (MicrocosmosPvE.CanUse(out act)) return true;
                 else
                 {
                     if (LightspeedPvE.CanUse(out act) && !Player.HasStatus(true, StatusID.Lightspeed)) return true;
-                    if (nextGCD.IsTheSameTo(true, AspectedHeliosPvE, HeliosPvE))
-                    {
-                        if (HoroscopePvE.CanUse(out act)) return true;
-                        if (HoroscopePvE.Cooldown.IsCoolingDown && NeutralSectPvE.CanUse(out act)) return true;
-                    }
+                    //if (nextGCD.IsTheSameTo(true, AspectedHeliosPvE, HeliosPvE))
+                    //{
+
+                    //    if (StellarDetonationPvE.CanUse(out act)) return true;
+                    //    else if (CelestialOppositionPvE.CanUse(out act)) return true;
+                    //    else if (HoroscopePvE.CanUse(out act)) return true;
+                    //    else if (NeutralSectPvE.CanUse(out act)) return true;
+                    //}
                 }
             }
-
             if (nextGCD.IsTheSameTo(true, BeneficPvE, BeneficIiPvE, AspectedBeneficPvE))
             {
                 if (SynastryPvE.CanUse(out act)) return true;
@@ -66,8 +77,6 @@ namespace RotationsProject.Healer
             if (remainTime < MaleficPvE.Info.CastTime + CountDownAhead
                 && MaleficPvE.CanUse(out var act)) return act;
             if (remainTime < 3 && UseBurstMedicine(out act)) return act;
-            if (remainTime < 30 && AstralDrawPvE.CanUse(out act)) return act;
-
             return base.CountDownAction(remainTime);
         }
         #endregion
@@ -185,23 +194,14 @@ namespace RotationsProject.Healer
                 SunSignPvE.CanUse(out act);
                 return true;
             }
-            /// Stack 2 minute buffs
             // Draw cards
             if (AstralDrawPvE.CanUse(out act) && !TheBalancePvE.CanUse(out _)) return true;
             if (UmbralDrawPvE.CanUse(out act) && !TheSpearPvE.CanUse(out _)) return true;
-            // Buff cards
-            if (InCombat && (!DivinationPvE.Cooldown.WillHaveOneCharge(70) || DivinationPvE.Cooldown.HasOneCharge))
-            {
-                if (InCombat && TheBalancePvE.CanUse(out act) && !(TheBalancePvE.Target.Target.HasStatus(false, StatusID.Weakness))) return true;
-                if (InCombat && TheSpearPvE.CanUse(out act) && !(TheSpearPvE.Target.Target.HasStatus(false, StatusID.Weakness))) return true;
-            }
             // Support cards used before next draw
             if (TheArrowPvE.CanUse(out act) && UmbralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
             if (TheSpirePvE.CanUse(out act) && UmbralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
             if (TheEwerPvE.CanUse(out act) && AstralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
             if (TheBolePvE.CanUse(out act) && AstralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
-            // Weave lucid dreaming during combat
-            if (CurrentMp <= 6000 && InCombat && LucidDreamingPvE.CanUse(out act)) return true;
 
             return base.GeneralAbility(nextGCD, out act);
         }
