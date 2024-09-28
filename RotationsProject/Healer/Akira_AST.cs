@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace RotationsProject.Healer
 {
-    [Rotation("Akira_AST", CombatType.PvE, Description = "Akira's rotation for AST v0.7", GameVersion = "7.05")]
+    [Rotation("Akira_AST", CombatType.PvE, Description = "Akira's rotation for AST v0.10", GameVersion = "7.05")]
     [SourceCode(Path = "main/RotationsProject/Healer/Akira_AST.cs")]
-    [Api(3)]
+    [Api(4)]
     public class Akira_AST : AstrologianRotation
     {
         #region Config Options
@@ -19,7 +19,15 @@ namespace RotationsProject.Healer
 
         [Range(0, 1, ConfigUnitType.Percent)]
         [RotationConfig(CombatType.PvE, Name = "Average Party HP for using Horoscope Helios")]
-        public float HoroHelios { get; set; } = 0.8f;
+        public float HoroHelios { get; set; } = 0.85f;
+
+        [Range(0, 1, ConfigUnitType.Percent)]
+        [RotationConfig(CombatType.PvE, Name = "Target's HP Percent for Arrow")]
+        public float ArrowUse { get; set; } = 0.8f;
+
+        [Range(0, 1, ConfigUnitType.Percent)]
+        [RotationConfig(CombatType.PvE, Name = "Target's HP Percent for Ewer")]
+        public float EwerUse { get; set; } = 0.8f;
         #endregion
 
         #region Emergency Action
@@ -31,11 +39,15 @@ namespace RotationsProject.Healer
 
             if (PartyMembersAverHP < 0.85f)
             {
-                if (LightspeedPvE.CanUse(out act) && !Player.HasStatus(true, StatusID.Lightspeed)) return true;
-                if (nextGCD.IsTheSameTo(true, AspectedHeliosPvE, HeliosPvE))
+                if (MicrocosmosPvE.CanUse(out act)) return true;
+                else
                 {
-                    if (HoroscopePvE.CanUse(out act)) return true;
-                    if (HoroscopePvE.Cooldown.IsCoolingDown && NeutralSectPvE.CanUse(out act)) return true;
+                    if (LightspeedPvE.CanUse(out act) && !Player.HasStatus(true, StatusID.Lightspeed)) return true;
+                    if (nextGCD.IsTheSameTo(true, AspectedHeliosPvE, HeliosPvE))
+                    {
+                        if (HoroscopePvE.CanUse(out act)) return true;
+                        if (HoroscopePvE.Cooldown.IsCoolingDown && NeutralSectPvE.CanUse(out act)) return true;
+                    }
                 }
             }
 
@@ -54,7 +66,6 @@ namespace RotationsProject.Healer
             if (remainTime < MaleficPvE.Info.CastTime + CountDownAhead
                 && MaleficPvE.CanUse(out var act)) return act;
             if (remainTime < 3 && UseBurstMedicine(out act)) return act;
-            if (remainTime is < 4 and > 3 && AspectedBeneficPvE.CanUse(out act)) return act;
             if (remainTime < 30 && AstralDrawPvE.CanUse(out act)) return act;
 
             return base.CountDownAction(remainTime);
@@ -69,53 +80,56 @@ namespace RotationsProject.Healer
             if (TheSpirePvE.CanUse(out act) && InCombat) return true;
             if (TheBolePvE.CanUse(out act) && InCombat) return true;
             // oGCD
-            if (InCombat && ExaltationPvE.CanUse(out act)) return true;
+            if (ExaltationPvE.CanUse(out act)) return true;
             if (CelestialIntersectionPvE.CanUse(out act)) return true;
             return base.DefenseSingleAbility(nextGCD, out act);
         }
-        [RotationDesc(ActionID.SunSignPvE, ActionID.CollectiveUnconsciousPvE)]
+        [RotationDesc(ActionID.SunSignPvE, ActionID.NeutralSectPvE, ActionID.CollectiveUnconsciousPvE)]
         protected override bool DefenseAreaAbility(IAction nextGCD, out IAction act)
         {
-            if (InCombat && SunSignPvE.CanUse(out act)) return true; // Sun Sign should be prioritized when available
-            if (InCombat && CollectiveUnconsciousPvE.CanUse(out act)) return true;
+            if (SunSignPvE.CanUse(out act)) return true; // Sun Sign should be prioritized when available
+            if (NeutralSectPvE.CanUse(out act)) return true; // Big cooldown so wanna use this more often
+            if (CollectiveUnconsciousPvE.CanUse(out act)) return true;
             return base.DefenseAreaAbility(nextGCD, out act);
         }
-        [RotationDesc(ActionID.MacrocosmosPvE, ActionID.NeutralSectPvE)]
+        [RotationDesc(ActionID.MacrocosmosPvE)]
         protected override bool DefenseAreaGCD(out IAction act)
         {
             act = null;
-            if(Player.HasStatus(true, StatusID.WheelOfFortune))
+            if(CollectiveUnconsciousPvE.CanUse(out _))
             {
                 return false;
             }
             else
             {
                 if (MacrocosmosPvE.CanUse(out act) && !Player.HasStatus(true, StatusID.Horoscope, StatusID.HoroscopeHelios)) return true;
-                if (NeutralSectPvE.CanUse(out act)) return true;
             }
             return base.DefenseAreaGCD(out act);
         }
         #endregion
 
         #region Heal Logic
-        [RotationDesc(ActionID.TheArrowPvE, ActionID.TheEwerPvE, ActionID.EssentialDignityPvE)]
+        [RotationDesc(ActionID.TheArrowPvE, ActionID.TheEwerPvE, ActionID.CelestialIntersectionPvE, ActionID.EssentialDignityPvE)]
         protected override bool HealSingleAbility(IAction nextGCD, out IAction act)
         {
             // Cards
-            if (TheArrowPvE.CanUse(out act) && InCombat) return true;
-            if (TheEwerPvE.CanUse(out act) && InCombat) return true;
+            if (TheArrowPvE.CanUse(out act) && TheArrowPvE.Target.Target?.GetHealthRatio() <= ArrowUse) return true;
+            if (TheEwerPvE.CanUse(out act) && TheEwerPvE.Target.Target?.GetHealthRatio() <= EwerUse) return true;
             // oGCD
             if (EssentialDignityPvE.CanUse(out act) && EssentialDignityPvE.Target.Target?.GetHealthRatio() <= EssDigHeal) return true;
+            if (CelestialIntersectionPvE.CanUse(out act)) return true;
             return base.HealSingleAbility(nextGCD, out act);
         }
         [RotationDesc(ActionID.MicrocosmosPvE, ActionID.LadyOfCrownsPvE, ActionID.StellarDetonationPvE, ActionID.CelestialOppositionPvE, ActionID.HoroscopePvE)]
         protected override bool HealAreaAbility(IAction nextGCD, out IAction act)
         {
+            // Priority
             if (MicrocosmosPvE.CanUse(out act)) return true; // Want to use this first if Macrocosmos was used
             if (LadyOfCrownsPvE.CanUse(out act)) return true;
+            // Lv. (Desc)
+            if (HoroscopePvE.CanUse(out act)) return true;
             if (StellarDetonationPvE.CanUse(out act)) return true;
             if (CelestialOppositionPvE.CanUse(out act)) return true;
-            if (HoroscopePvE.CanUse(out act)) return true;
             return base.HealAreaAbility(nextGCD, out act);
         }
         [RotationDesc(ActionID.AspectedBeneficPvE, ActionID.BeneficIiPvE, ActionID.BeneficPvE)]
@@ -165,27 +179,29 @@ namespace RotationsProject.Healer
             {
                 if (HoroscopePvE_16558.CanUse(out act)) return true;
             }
-
-
             // Use SunSign if losing effect soon
-            if (Player.HasStatus(true, StatusID.Suntouched) && Player.WillStatusEnd(6, true, StatusID.Suntouched))
+            if (Player.HasStatus(true, StatusID.Suntouched) && Player.WillStatusEndGCD(gcdCount: 3))
             {
                 SunSignPvE.CanUse(out act);
                 return true;
             }
+            /// Stack 2 minute buffs
             // Draw cards
-            if (AstralDrawPvE.CanUse(out act)) return true;
-            if (UmbralDrawPvE.CanUse(out act)) return true;
+            if (AstralDrawPvE.CanUse(out act) && !TheBalancePvE.CanUse(out _)) return true;
+            if (UmbralDrawPvE.CanUse(out act) && !TheSpearPvE.CanUse(out _)) return true;
             // Buff cards
-            if (InCombat && TheBalancePvE.CanUse(out act) && !(TheBalancePvE.Target.Target.HasStatus(false, StatusID.Weakness))) return true;
-            if (InCombat && TheSpearPvE.CanUse(out act) && !(TheSpearPvE.Target.Target.HasStatus(false, StatusID.Weakness))) return true;
+            if (InCombat && (!DivinationPvE.Cooldown.WillHaveOneCharge(70) || DivinationPvE.Cooldown.HasOneCharge))
+            {
+                if (InCombat && TheBalancePvE.CanUse(out act) && !(TheBalancePvE.Target.Target.HasStatus(false, StatusID.Weakness))) return true;
+                if (InCombat && TheSpearPvE.CanUse(out act) && !(TheSpearPvE.Target.Target.HasStatus(false, StatusID.Weakness))) return true;
+            }
             // Support cards used before next draw
-            if (TheArrowPvE.CanUse(out act) && UmbralDrawPvE.Cooldown.WillHaveOneCharge(12)) return true;
-            if (TheSpirePvE.CanUse(out act) && UmbralDrawPvE.Cooldown.WillHaveOneCharge(12)) return true;
-            if (TheEwerPvE.CanUse(out act) && AstralDrawPvE.Cooldown.WillHaveOneCharge(12)) return true;
-            if (TheBolePvE.CanUse(out act) && AstralDrawPvE.Cooldown.WillHaveOneCharge(12)) return true;
+            if (TheArrowPvE.CanUse(out act) && UmbralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
+            if (TheSpirePvE.CanUse(out act) && UmbralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
+            if (TheEwerPvE.CanUse(out act) && AstralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
+            if (TheBolePvE.CanUse(out act) && AstralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
             // Weave lucid dreaming during combat
-            if (CurrentMp <= 6500 && InCombat && LucidDreamingPvE.CanUse(out act)) return true;
+            if (CurrentMp <= 6000 && InCombat && LucidDreamingPvE.CanUse(out act)) return true;
 
             return base.GeneralAbility(nextGCD, out act);
         }
@@ -193,27 +209,25 @@ namespace RotationsProject.Healer
         protected override bool AttackAbility(IAction nextGCD, out IAction? act)
         {
             if (IsBurst && DivinationPvE.CanUse(out act)) return true;
+            if (OraclePvE.CanUse(out act)) return true;
 
-            if (AstralDrawPvE.CanUse(out act, usedUp: IsBurst)) return true;
+            if (IsMoving && LightspeedPvE.CanUse(out act)) return true;
 
-            if (InCombat)
+            if (!IsMoving && (NumberOfAllHostilesInRange < 2))
             {
-                if (IsMoving && LightspeedPvE.CanUse(out act)) return true;
-
-                if (!IsMoving && (NumberOfAllHostilesInRange < 2))
+                if (!Player.HasStatus(true, StatusID.EarthlyDominance, StatusID.GiantDominance))
                 {
-                    if (!Player.HasStatus(true, StatusID.EarthlyDominance, StatusID.GiantDominance))
-                    {
-                        if (EarthlyStarPvE.CanUse(out act)) return true;
-                    }
-                }
-
-                {
-                    if (LordOfCrownsPvE.CanUse(out act)) return true;
+                    if (EarthlyStarPvE.CanUse(out act)) return true;
                 }
             }
 
-            if (OraclePvE.CanUse(out act)) return true;
+            if (HostileTarget.IsBossFromIcon())
+            {
+                if (LordOfCrownsPvE.CanUse(out act)) return true;
+            }
+
+            if (LordOfCrownsPvE.CanUse(out act) && LordOfCrownsPvE.Target.AffectedTargets?.Length > 1) return true;
+
             return base.AttackAbility(nextGCD, out act);
         }
 
