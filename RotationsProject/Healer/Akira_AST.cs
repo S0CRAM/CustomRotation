@@ -19,7 +19,7 @@ namespace RotationsProject.Healer
 
         [Range(0, 1, ConfigUnitType.Percent)]
         [RotationConfig(CombatType.PvE, Name = "Average Party HP for using Horoscope Helios")]
-        public float HoroHelios { get; set; } = 0.85f;
+        public float HoroHelios { get; set; } = 0.9f;
 
         [Range(0, 1, ConfigUnitType.Percent)]
         [RotationConfig(CombatType.PvE, Name = "Target's HP Percent for Arrow")]
@@ -198,10 +198,10 @@ namespace RotationsProject.Healer
             if (AstralDrawPvE.CanUse(out act) && !TheBalancePvE.CanUse(out _)) return true;
             if (UmbralDrawPvE.CanUse(out act) && !TheSpearPvE.CanUse(out _)) return true;
             // Support cards used before next draw
-            if (TheArrowPvE.CanUse(out act) && UmbralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
-            if (TheSpirePvE.CanUse(out act) && UmbralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
-            if (TheEwerPvE.CanUse(out act) && AstralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
-            if (TheBolePvE.CanUse(out act) && AstralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
+            //if (TheArrowPvE.CanUse(out act) && UmbralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
+            //if (TheSpirePvE.CanUse(out act) && UmbralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
+            //if (TheEwerPvE.CanUse(out act) && AstralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
+            //if (TheBolePvE.CanUse(out act) && AstralDrawPvE.Cooldown.WillHaveOneChargeGCD(gcdCount: 3)) return true;
 
             return base.GeneralAbility(nextGCD, out act);
         }
